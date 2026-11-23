@@ -3,59 +3,40 @@
 """Minifies an SQF file."""
 from pathlib import Path
 from re import sub, compile, DOTALL
-import sre_constants
 
-INLINE_COMMENT = compile('//+[^\n]+')
-BLOCK_COMMENT = compile('/\*.*?\*/', DOTALL)
-WHITESPACE_REGEX = r"(?:\/\*(?:(?!\*\/)(?:.|\n))*\*\/\n|\ {2,}|\t)"
-
-def load_code(path_or_code: (Path, str)):
-    """If passed a file path, loads code from that file. Else, returns its input."""
-
-    if Path(path_or_code).exists():
-        with open(path_or_code) as f:
-            return f.read()
-
-    return path_or_code
-    
-def strip_spaces(text: str) -> str:
-    """Removes whitespace indentation"""
-    text = sub(WHITESPACE_REGEX, '', text).replace('\n\n', '\n');
-    return text
-    
-def strip_comments(text: str) -> str:
-    """Removes SQF-style comments and block comments."""
-    text = sub(INLINE_COMMENT, '', text)
-    text = sub(BLOCK_COMMENT, '', text)
-    return text
+INLINE_COMMENT = compile(r'//+[^\n]+')
+BLOCK_COMMENT = compile(r'/\*.*?\*/', DOTALL)
+COMBINED_WHITESPACE = compile(r'/\*(?:(?!\*/)(?:.|\n))*\*/\n| {2,}|\t|\n\n+')
 
 def minify_file(file_in: (Path, str), file_out: (Path, str, bool, None) = False) -> str:
     """Minifies an SQF file, optionally outputting minified text to a file."""
     file_in = Path(file_in)
-
     if file_out is None:
         file_out = file_in.parent / f"{file_in.stem}-min{file_in.suffix}"
 
-    with open(file_in) as f:
-        text = f.read()
+    text = file_in.read_text()
 
-    text = strip_comments(text)
-    
-    output = ''
-    for line in text.splitlines():
+    # Strip comments
+    text = INLINE_COMMENT.sub('', text)
+    text = BLOCK_COMMENT.sub('', text)
+
+    # Handle preprocessor lines, then strip whitespace in one pass
+    parts = text.splitlines()
+    output_parts = []
+    for line in parts:
         if line[:1] == '#':
-            output += f'\n{line}\n'
+            output_parts.append(f'\n{line}\n')
         else:
-            output += line
-    
-    output = strip_spaces(output)
-    
-    if output[:1] == '\n':
-        output = output[1:]
-    
+            output_parts.append(line)
+
+    output = COMBINED_WHITESPACE.sub(
+        lambda m: '\n' if m.group() and '\n\n' in m.group() else '',
+        ''.join(output_parts)
+    ).lstrip('\n')
+
     if file_out:
-        with open(file_out, 'w') as f:
-            f.write(output)
+        file_out = Path(file_out)
+        file_out.write_text(output)
 
     return output
 
@@ -66,7 +47,6 @@ if __name__ == '__main__':
         try:
             text = minify_file(**arguments)
             if do_print:
-                # print(len(text))
                 print(text)
         except FileNotFoundError:
             print(f"Cannot find file: \"{argv[1]}\"")

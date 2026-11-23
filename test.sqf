@@ -36,11 +36,11 @@ DeleteVehicleWhenEmpty = { // vehicle, delay  --> void
 		waitUntil {
 			if (count ((crew vehicle _veh) select {alive _x}) isEqualTo 0) then {
 				_time = diag_tickTime + _delay;
-					
+
 				waitUntil {
 					diag_tickTime > _time || count (crew vehicle _veh select {alive _x}) > 0
 				};
-					
+
 				if (diag_tickTime > _time && {count (crew vehicle _veh select {alive _x}) isEqualTo 0}) exitWith {
 					deleteVehicle _veh;
 				};
@@ -71,8 +71,8 @@ GetPosLookingAt = { // ?max_dist, ?default_pos --> void
 		["_default_pos", player getPos [25,getDir player]]
 	];
 	private _ins = lineIntersectsSurfaces [
-		AGLToASL positionCameraToWorld [0,0,0], 
-		AGLToASL positionCameraToWorld [0,0,_max_dist], 
+		AGLToASL positionCameraToWorld [0,0,0],
+		AGLToASL positionCameraToWorld [0,0,_max_dist],
 		player
 	];
 	if (count _ins == 0) then {
@@ -123,18 +123,18 @@ rev_reviveUnit = { // unit, medic --> void
 	private ["_unit", "_medic"];
 	_unit = _this select 0;
 	_medic = _this select 1;
-	if (isPlayer _unit) then {	
-		[] remoteExec ["rev_resetCamera", _unit];	
-		[_unit, false] remoteExec ["setUnconscious", _unit];		
+	if (isPlayer _unit) then {
+		[] remoteExec ["rev_resetCamera", _unit];
+		[_unit, false] remoteExec ["setUnconscious", _unit];
 		[_unit, true] remoteExec ["allowDamage", _unit];
-		[_unit, false] remoteExec ["setCaptive", _unit];		
+		[_unit, false] remoteExec ["setCaptive", _unit];
 	} else {
 		if (local _unit) then {
-			_unit setUnconscious false;			
+			_unit setUnconscious false;
 			_unit allowDamage true;
 			_unit setCaptive false;
 		} else {
-			[_unit, false] remoteExec ["setUnconscious", _unit];		
+			[_unit, false] remoteExec ["setUnconscious", _unit];
 			[_unit, true] remoteExec ["allowDamage", _unit];
 			[_unit, false] remoteExec ["setCaptive", _unit];
 		};
@@ -219,12 +219,12 @@ SpawnGarage = { // ?pos, ?cleanup_after_x_seconds  -->  object
 		["_cleanup", 180]
 	];
 	// make a helipad
-	new_helipad = createVehicle ["Land_HelipadCivil_F", _pos, [], 0, "CAN_COLLIDE"]; 
+	new_helipad = createVehicle ["Land_HelipadCivil_F", _pos, [], 0, "CAN_COLLIDE"];
 
 	// make some lights around the helipad
 	private _posts = [];
 	{
-		private _newpost = createVehicle ["PortableHelipadLight_01_red_F", _pos, [], 0, "CAN_COLLIDE"]; 
+		private _newpost = createVehicle ["PortableHelipadLight_01_red_F", _pos, [], 0, "CAN_COLLIDE"];
 		_newpost attachTo [new_helipad, _x];
 		_posts pushBack _newpost;
 	} foreach ([_pos, 6, 8] call PointsAround);
@@ -234,12 +234,12 @@ SpawnGarage = { // ?pos, ?cleanup_after_x_seconds  -->  object
 	_console_pos = [(_console_pos select 0), (_console_pos select 1), (_console_pos select 2) - 3.3];
 	private _console_dir = (player getDir new_helipad);
 	hint (format ["%1", _console_pos]);
-	
+
 	private _console = createVehicle ["Land_InfoStand_V2_F", _console_pos, [], 0, "CAN_COLLIDE"];
 
 	_console attachTo [new_helipad,_console_pos];
 	_console setDir _console_dir;
-	
+
 	_console addAction ["Open Garage", {
 		["Open", [ true, new_helipad ]] call BIS_fnc_garage;
 	}];
@@ -305,7 +305,7 @@ AllEnemies = {  //  -->  void
 		private _notCiv = side _x != civilian;
 		if (_notAlly && _notCiv) then {
 			_retn pushBackUnique _x;
-		} 
+		}
 	} forEach allUnits;
 	_retn;
 };
