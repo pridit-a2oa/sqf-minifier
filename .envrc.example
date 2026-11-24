@@ -1,0 +1,8 @@
+if [ ! -d .venv ]; then
+    python3 -m venv .venv
+    .venv/bin/pip install -r requirements.txt
+fi
+
+export VIRTUAL_ENV="$PWD/.venv"
+PATH_add .venv/bin
+watch_file requirements.txt
